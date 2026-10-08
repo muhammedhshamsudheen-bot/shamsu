@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixNear | Real-Time Local Service Booking Platform</title>
+    <meta name="description"
+        content="FixNear is a real-time local service booking platform. Find and track verified bike mechanics, electricians, plumbers, AC technicians, and home experts near you.">
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Leaflet CSS for Interactive OpenStreetMap -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- =========================================================
+         1. NAVBAR
+    ========================================================= -->
+    <header class="navbar" id="navbar">
+        <div class="nav-container">
+            <!-- Brand Logo -->
+            <a href="#home" class="logo">
+                <span class="logo-icon">
+                    <i class="fa-solid fa-wrench"></i>
+                </span>
+                <span>Fix<span class="logo-highlight">Near</span></span>
+            </a>
+
+            <!-- Desktop Nav Links -->
+            <nav class="nav-links">
+                <a href="#home" class="active">Home</a>
+                <a href="#services">Services</a>
+                <a href="#map-section">Nearby Map</a>
+                <a href="#providers">Providers</a>
+                <a href="#emergency">Emergency</a>
+                <a href="#price-checker">Fair Price</a>
+                <a href="#how-it-works">How It Works</a>
+            </nav>
+
+            <!-- Nav Action Buttons -->
+            <div class="nav-actions">
+                <!-- Location Pill Button -->
+                <button class="location-btn" id="navLocationBtn" onclick="openLocationModal()" title="Change Location">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span id="navLocationText">Coimbatore</span>
+                    <i class="fa-solid fa-chevron-down nav-arrow"></i>
+                </button>
+
+                <!-- Active Booking Live Badge (Hidden when no active booking) -->
+                <button class="active-booking-btn" id="navActiveBookingBtn" onclick="openActiveTrackingModal()" style="display: none;">
+                    <span class="pulse-dot"></span>
+                    <span>Track Active Service</span>
+                </button>
+
+                <!-- My Bookings Button -->
+                <button class="outline-btn" id="navMyBookingsBtn" onclick="openMyBookingsModal()">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                    <span>My Bookings</span>
+                    <span class="bookings-badge" id="bookingsCountBadge" style="display:none;">0</span>
+                </button>
+
+                <!-- Login / Profile Button -->
+                <button class="login-btn" id="navLoginBtn" onclick="openLoginModal()">
+                    <i class="fa-solid fa-user"></i>
+                    <span id="navUserText">Login</span>
+                </button>
+
+                <!-- Mobile Menu Hamburger -->
+                <button class="menu-btn" id="menuBtn" aria-label="Toggle Menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- =========================================================
+         2. MOBILE MENU SLIDEOVER
+    ========================================================= -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <a href="#" class="logo">
+                <span class="logo-icon"><i class="fa-solid fa-wrench"></i></span>
+                <span>Fix<span class="logo-highlight">Near</span></span>
+            </a>
+            <button class="mobile-close" id="mobileClose" aria-label="Close Menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="mobile-location-box" onclick="openLocationModal()">
+            <i class="fa-solid fa-location-crosshairs"></i>
+            <div>
+                <small>Current Location</small>
+                <strong id="mobileLocationText">Coimbatore</strong>
+            </div>
+            <i class="fa-solid fa-chevron-right"></i>
+        </div>
+
+        <nav class="mobile-nav-links">
+            <a href="#home"><i class="fa-solid fa-house"></i> Home</a>
+            <a href="#services"><i class="fa-solid fa-grid-2"></i> All Services</a>
+            <a href="#map-section"><i class="fa-solid fa-map-location-dot"></i> Live Map</a>
+            <a href="#providers"><i class="fa-solid fa-users-gear"></i> Find Providers</a>
+            <a href="#emergency"><i class="fa-solid fa-bolt-lightning"></i> Emergency Help</a>
+            <a href="#price-checker"><i class="fa-solid fa-calculator"></i> Fair Price Calculator</a>
+            <a href="#how-it-works"><i class="fa-solid fa-circle-info"></i> How It Works</a>
+        </nav>
+
+        <div class="mobile-menu-footer">
+            <button class="mobile-btn secondary-btn" onclick="openMyBookingsModal()">
+                <i class="fa-solid fa-calendar-check"></i> My Bookings
+            </button>
+            <button class="mobile-login" id="mobileLoginBtn" onclick="openLoginModal()">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i> Login / Register
+            </button>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         3. MOBILE BOTTOM NAVIGATION (Uber/Rapido style)
+    ========================================================= -->
+    <nav class="mobile-bottom-nav">
+        <a href="#home" class="bottom-nav-item active" id="bNavHome">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+        </a>
+        <a href="#services" class="bottom-nav-item" id="bNavServices">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>Services</span>
+        </a>
+        <a href="#map-section" class="bottom-nav-item" id="bNavMap">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <span>Live Map</span>
+        </a>
+        <button class="bottom-nav-item" onclick="openMyBookingsModal()" id="bNavBookings">
+            <i class="fa-solid fa-receipt"></i>
+            <span>Bookings</span>
+        </button>
+        <button class="bottom-nav-item" onclick="openLoginModal()" id="bNavProfile">
+            <i class="fa-solid fa-user"></i>
+            <span>Profile</span>
+        </button>
+    </nav>
+
+    <!-- =========================================================
+         4. MAIN CONTENT
+    ========================================================= -->
+    <main>
+
+        <!-- =========================================================
+             HERO SECTION
+        ========================================================= -->
+        <section class="hero" id="home">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <!-- Hero Badge -->
+                    <div class="hero-badge">
+                        <span class="live-pulse-dot"></span>
+                        <span>Find trusted experts near you • Real-Time Booking</span>
+                    </div>
+
+                    <!-- Main Headline -->
+                    <h1>
+                        Get it fixed.
+                        <span>Right near you.</span>
+                    </h1>
+
+                    <!-- Subtitle -->
+                    <p>
+                        Connect with verified local mechanics, electricians, plumbers, AC technicians, and carpenters in minutes with real-time technician GPS tracking.
+                    </p>
+
+                    <!-- Smart Search & Geolocation Box -->
+                    <div class="hero-search">
+                        <div class="search-field">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="heroSearch" placeholder="What do you need help with? (e.g. Bike, AC, Plumber, Fan...)" autocomplete="off">
+                            <button class="search-clear-btn" id="searchClearBtn" style="display:none;" onclick="clearSearchInput()">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            </button>
+                        </div>
+
+                        <div class="search-divider"></div>
+
+                        <!-- Current Location Detector Button -->
+                        <div class="search-location-box">
+                            <button type="button" class="use-location-btn" id="heroLocationBtn" onclick="requestUserLocation()" title="Detect My Current GPS Location">
+                                <i class="fa-solid fa-crosshairs-simple"></i>
+                                <span id="heroLocationDisplay">Use My Location</span>
+                            </button>
+                        </div>
+
+                        <button class="search-btn" id="heroSearchBtn" onclick="handleHeroSearch()">
+                            <span>Search</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Geolocation Status Alert Banner (Shown during/after detection) -->
+                    <div class="location-status-banner" id="locationStatusBanner" style="display: none;">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span id="locationStatusText">Your location has been detected accurately via GPS.</span>
+                        <button class="change-loc-link" onclick="openLocationModal()">Change</button>
+                    </div>
+
+                    <!-- Quick Popular Searches -->
+                    <div class="popular-searches">
+                        <span>Popular:</span>
+                        <button type="button" onclick="quickFilterService('Bike Repair')">🏍️ Bike Repair</button>
+                        <button type="button" onclick="quickFilterService('Electrician')">⚡ Electrician</button>
+                        <button type="button" onclick="quickFilterService('Plumbing')">💧 Plumber</button>
+                        <button type="button" onclick="quickFilterService('AC Repair')">❄️ AC Repair</button>
+                        <button type="button" onclick="quickFilterService('Car Repair')">🚗 Car Repair</button>
+                        <button type="button" onclick="quickFilterService('Laptop Repair')">💻 Laptop</button>
+                    </div>
+                </div>
+
+                <!-- Hero Visual Side Card with Live Status -->
+                <div class="hero-visual">
+                    <div class="hero-card">
+                        <div class="hero-card-top">
+                            <div>
+                                <span class="small-label">AVAILABLE NEAR YOU</span>
+                                <h3 id="heroProCount">28+ Verified Pros</h3>
+                            </div>
+                            <div class="online-status">
+                                <span class="pulse-green"></span>
+                                <span>Live Dispatch</span>
+                            </div>
+                        </div>
+
+                        <!-- Live Mini Preview Providers -->
+                        <div class="mini-providers-list" id="miniProvidersList">
+                            <!-- Mini Card 1 -->
+                            <div class="mini-provider" onclick="quickBookProvider(1)">
+                                <div class="provider-avatar orange-bg">
+                                    <i class="fa-solid fa-motorcycle"></i>
+                                </div>
+                                <div class="provider-info">
+                                    <strong>Manoj Bike Works</strong>
+                                    <div class="provider-rating">
+                                        <i class="fa-solid fa-star"></i> 4.9 <span>(142 reviews)</span>
+                                    </div>
+                                    <small><i class="fa-solid fa-location-dot"></i> 1.1 km • 12 min arrival</small>
+                                </div>
+                                <span class="mini-action-tag">Book <i class="fa-solid fa-angle-right"></i></span>
+                            </div>
+
+                            <!-- Mini Card 2 -->
+                            <div class="mini-provider" onclick="quickBookProvider(4)">
+                                <div class="provider-avatar blue-bg">
+                                    <i class="fa-solid fa-bolt"></i>
+                                </div>
+                                <div class="provider-info">
+                                    <strong>Arun Kumar</strong>
+                                    <div class="provider-rating">
+                                        <i class="fa-solid fa-star"></i> 4.9 <span>(128 reviews)</span>
+                                    </div>
+                                    <small><i class="fa-solid fa-location-dot"></i> 1.2 km • 15 min arrival</small>
+                                </div>
+                                <span class="mini-action-tag">Book <i class="fa-solid fa-angle-right"></i></span>
+                            </div>
+
+                            <!-- Mini Card 3 -->
+                            <div class="mini-provider" onclick="quickBookProvider(10)">
+                                <div class="provider-avatar cyan-bg">
+                                    <i class="fa-solid fa-snowflake"></i>
+                                </div>
+                                <div class="provider-info">
+                                    <strong>Ravi AC Services</strong>
+                                    <div class="provider-rating">
+                                        <i class="fa-solid fa-star"></i> 4.9 <span>(154 reviews)</span>
+                                    </div>
+                                    <small><i class="fa-solid fa-location-dot"></i> 2.1 km • 18 min arrival</small>
+                                </div>
+                                <span class="mini-action-tag">Book <i class="fa-solid fa-angle-right"></i></span>
+                            </div>
+                        </div>
+
+                        <div class="hero-card-footer">
+                            <div class="trust-badge-mini">
+                                <i class="fa-solid fa-shield-halved"></i>
+                                <span>100% Background Verified & Insured</span>
+                            </div>
+                            <span class="eta-pill"><i class="fa-solid fa-bolt"></i> Avg 15 Min ETA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             TRUST HIGHLIGHTS STRIP
+        ========================================================= -->
+        <section class="trust-section">
+            <div class="trust-container">
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fa-solid fa-user-shield"></i></div>
+                    <div>
+                        <strong>Verified Pros</strong>
+                        <span>100% Police & Skill Checked</span>
+                    </div>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fa-solid fa-location-crosshairs"></i></div>
+                    <div>
+                        <strong>Live GPS Tracking</strong>
+                        <span>Watch Technician On Way</span>
+                    </div>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fa-solid fa-receipt"></i></div>
+                    <div>
+                        <strong>Fair & Fixed Pricing</strong>
+                        <span>Transparent Itemized Bills</span>
+                    </div>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fa-solid fa-qrcode"></i></div>
+                    <div>
+                        <strong>UPI & Cash On Service</strong>
+                        <span>Pay After Full Satisfaction</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             EMERGENCY / "NEED HELP NOW?" SECTION
+        ========================================================= -->
+        <section class="emergency-section section" id="emergency">
+            <div class="section-container">
+                <div class="emergency-banner">
+                    <div class="emergency-content">
+                        <span class="emergency-tag"><i class="fa-solid fa-bolt"></i> PRIORITY DISPATCH</span>
+                        <h2>Need Help Right Now?</h2>
+                        <p>Stuck on the road or facing an urgent home breakdown? Get the nearest available technician dispatched to your location in under 15 minutes.</p>
+                        <div class="emergency-grid">
+                            <button class="emergency-card" onclick="triggerEmergencyBooking('Bike Breakdown')">
+                                <span class="em-icon orange"><i class="fa-solid fa-motorcycle"></i></span>
+                                <div>
+                                    <strong>Bike Breakdown</strong>
+                                    <small>Puncture / Engine / Start</small>
+                                </div>
+                                <span class="em-arrow"><i class="fa-solid fa-bolt"></i> Quick Book</span>
+                            </button>
+
+                            <button class="emergency-card" onclick="triggerEmergencyBooking('Car Breakdown')">
+                                <span class="em-icon red"><i class="fa-solid fa-car"></i></span>
+                                <div>
+                                    <strong>Car Breakdown</strong>
+                                    <small>Battery jump / Tow / Tyre</small>
+                                </div>
+                                <span class="em-arrow"><i class="fa-solid fa-bolt"></i> Quick Book</span>
+                            </button>
+
+                            <button class="emergency-card" onclick="triggerEmergencyBooking('Electrical Emergency')">
+                                <span class="em-icon yellow"><i class="fa-solid fa-plug-circle-bolt"></i></span>
+                                <div>
+                                    <strong>Power / MCB Trip</strong>
+                                    <small>Short circuit / Spark / Fuse</small>
+                                </div>
+                                <span class="em-arrow"><i class="fa-solid fa-bolt"></i> Quick Book</span>
+                            </button>
+
+                            <button class="emergency-card" onclick="triggerEmergencyBooking('Water Leakage')">
+                                <span class="em-icon cyan"><i class="fa-solid fa-faucet-drip"></i></span>
+                                <div>
+                                    <strong>Water Pipe Burst</strong>
+                                    <small>Tank overflow / Valve leak</small>
+                                </div>
+                                <span class="em-arrow"><i class="fa-solid fa-bolt"></i> Quick Book</span>
+                            </button>
+
+                            <button class="emergency-card" onclick="triggerEmergencyBooking('Locksmith')">
+                                <span class="em-icon purple"><i class="fa-solid fa-key"></i></span>
+                                <div>
+                                    <strong>Locked Out</strong>
+                                    <small>Door lock / Key duplicate</small>
+                                </div>
+                                <span class="em-arrow"><i class="fa-solid fa-bolt"></i> Quick Book</span>
+                            </button>
+
+                            <button class="emergency-card" onclick="triggerEmergencyBooking('AC Breakdown')">
+                                <span class="em-icon blue"><i class="fa-solid fa-snowflake"></i></span>
+                                <div>
+                                    <strong>AC Breakdown</strong>
+                                    <small>Cooling failure / Gas leak</small>
+                                </div>
+                                <span class="em-arrow"><i class="fa-solid fa-bolt"></i> Quick Book</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             SERVICES CATEGORIES SECTION
+        ========================================================= -->
+        <section class="services-section section" id="services">
+            <div class="section-container">
+                <div class="section-heading">
+                    <div>
+                        <span class="section-tag">POPULAR SERVICES</span>
+                        <h2>What do you need fixed today?</h2>
+                        <p class="section-subtitle">Select any category to view problems, estimated charges, and instant nearby technician availability.</p>
+                    </div>
+                    <button class="view-all-btn" id="viewAllServicesBtn" onclick="toggleAllServices()">
+                        <span id="viewAllServicesText">View all 16 categories</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <!-- Services Grid (20+ categories supported) -->
+                <div class="services-grid" id="servicesGrid">
+                    <!-- Bike Repair -->
+                    <button class="service-card" data-service="Bike Repair" onclick="selectServiceCategory('Bike Repair')">
+                        <div class="service-icon orange">
+                            <i class="fa-solid fa-motorcycle"></i>
+                        </div>
+                        <h3>Bike Repair</h3>
+                        <p>General service, puncture, brake & engine</p>
+                        <span class="service-price">From ₹199</span>
+                    </button>
+
+                    <!-- Car Repair -->
+                    <button class="service-card" data-service="Car Repair" onclick="selectServiceCategory('Car Repair')">
+                        <div class="service-icon red">
+                            <i class="fa-solid fa-car"></i>
+                        </div>
+                        <h3>Car Repair</h3>
+                        <p>Battery, brake, engine & roadside assist</p>
+                        <span class="service-price">From ₹399</span>
+                    </button>
+
+                    <!-- Electrician -->
+                    <button class="service-card" data-service="Electrician" onclick="selectServiceCategory('Electrician')">
+                        <div class="service-icon yellow">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                        <h3>Electrician</h3>
+                        <p>Fan, switch, MCB, wiring & installation</p>
+                        <span class="service-price">From ₹199</span>
+                    </button>
+
+                    <!-- Plumbing -->
+                    <button class="service-card" data-service="Plumbing" onclick="selectServiceCategory('Plumbing')">
+                        <div class="service-icon cyan">
+                            <i class="fa-solid fa-faucet-drip"></i>
+                        </div>
+                        <h3>Plumbing</h3>
+                        <p>Tap leak, pipe fittings, motor & drainage</p>
+                        <span class="service-price">From ₹199</span>
+                    </button>
+
+                    <!-- AC Repair -->
+                    <button class="service-card" data-service="AC Repair" onclick="selectServiceCategory('AC Repair')">
+                        <div class="service-icon blue">
+                            <i class="fa-solid fa-snowflake"></i>
+                        </div>
+                        <h3>AC Repair</h3>
+                        <p>Gas refilling, deep cleaning, cooling fix</p>
+                        <span class="service-price">From ₹299</span>
+                    </button>
+
+                    <!-- Laptop Repair -->
+                    <button class="service-card" data-service="Laptop Repair" onclick="selectServiceCategory('Laptop Repair')">
+                        <div class="service-icon indigo">
+                            <i class="fa-solid fa-laptop"></i>
+                        </div>
+                        <h3>Laptop Repair</h3>
+                        <p>Screen, battery, OS install, SSD upgrade</p>
+                        <span class="service-price">From ₹299</span>
+                    </button>
+
+                    <!-- Mobile Repair -->
+                    <button class="service-card" data-service="Mobile Repair" onclick="selectServiceCategory('Mobile Repair')">
+                        <div class="service-icon teal">
+                            <i class="fa-solid fa-mobile-screen"></i>
+                        </div>
+                        <h3>Mobile Repair</h3>
+                        <p>Display replacement, battery, charging port</p>
+                        <span class="service-price">From ₹249</span>
+                    </button>
+
+                    <!-- Appliances -->
+                    <button class="service-card" data-service="Appliances" onclick="selectServiceCategory('Appliances')">
+                        <div class="service-icon purple">
+                            <i class="fa-solid fa-plug"></i>
+                        </div>
+                        <h3>Appliances</h3>
+                        <p>Washing machine, fridge, TV, microwave</p>
+                        <span class="service-price">From ₹249</span>
+                    </button>
+
+                    <!-- Cleaning (Expandable) -->
+                    <button class="service-card extra-service" data-service="Cleaning" onclick="selectServiceCategory('Cleaning')">
+                        <div class="service-icon emerald">
+                            <i class="fa-solid fa-broom"></i>
+                        </div>
+                        <h3>Deep Cleaning</h3>
+                        <p>Full home, kitchen, bathroom & sofa</p>
+                        <span class="service-price">From ₹499</span>
+                    </button>
+
+                    <!-- Carpenter (Expandable) -->
+                    <button class="service-card extra-service" data-service="Carpenter" onclick="selectServiceCategory('Carpenter')">
+                        <div class="service-icon amber">
+                            <i class="fa-solid fa-hammer"></i>
+                        </div>
+                        <h3>Carpenter</h3>
+                        <p>Furniture repair, doors, locks & modular</p>
+                        <span class="service-price">From ₹249</span>
+                    </button>
+
+                    <!-- Painter (Expandable) -->
+                    <button class="service-card extra-service" data-service="Painter" onclick="selectServiceCategory('Painter')">
+                        <div class="service-icon pink">
+                            <i class="fa-solid fa-paint-roller"></i>
+                        </div>
+                        <h3>Painter</h3>
+                        <p>Wall touch-up, waterproofing, full repainting</p>
+                        <span class="service-price">From ₹599</span>
+                    </button>
+
+                    <!-- RO / Water Purifier -->
+                    <button class="service-card extra-service" data-service="RO Purifier" onclick="selectServiceCategory('RO Purifier')">
+                        <div class="service-icon sky">
+                            <i class="fa-solid fa-droplet"></i>
+                        </div>
+                        <h3>RO / Purifier</h3>
+                        <p>Filter replacement, membrane, TDS tuning</p>
+                        <span class="service-price">From ₹299</span>
+                    </button>
+
+                    <!-- CCTV Technician -->
+                    <button class="service-card extra-service" data-service="CCTV Technician" onclick="selectServiceCategory('CCTV Technician')">
+                        <div class="service-icon dark-blue">
+                            <i class="fa-solid fa-video"></i>
+                        </div>
+                        <h3>CCTV Security</h3>
+                        <p>Camera installation, DVR setup & wiring</p>
+                        <span class="service-price">From ₹349</span>
+                    </button>
+
+                    <!-- Pest Control -->
+                    <button class="service-card extra-service" data-service="Pest Control" onclick="selectServiceCategory('Pest Control')">
+                        <div class="service-icon lime">
+                            <i class="fa-solid fa-bug"></i>
+                        </div>
+                        <h3>Pest Control</h3>
+                        <p>Cockroach, termite, bed bugs & sanitization</p>
+                        <span class="service-price">From ₹399</span>
+                    </button>
+
+                    <!-- Locksmith -->
+                    <button class="service-card extra-service" data-service="Locksmith" onclick="selectServiceCategory('Locksmith')">
+                        <div class="service-icon rose">
+                            <i class="fa-solid fa-lock-open"></i>
+                        </div>
+                        <h3>Locksmith</h3>
+                        <p>Door unlocking, lock repair & key making</p>
+                        <span class="service-price">From ₹249</span>
+                    </button>
+
+                    <!-- WiFi / Internet -->
+                    <button class="service-card extra-service" data-service="WiFi Technician" onclick="selectServiceCategory('WiFi Technician')">
+                        <div class="service-icon violet">
+                            <i class="fa-solid fa-wifi"></i>
+                        </div>
+                        <h3>WiFi & Network</h3>
+                        <p>Router setup, LAN cable, signal booster</p>
+                        <span class="service-price">From ₹199</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             INTERACTIVE MAP SECTION (Leaflet.js + OpenStreetMap)
+        ========================================================= -->
+        <section class="map-section section" id="map-section">
+            <div class="section-container">
+                <div class="section-heading">
+                    <div>
+                        <span class="section-tag"><i class="fa-solid fa-location-dot"></i> LIVE COVERAGE</span>
+                        <h2>Service Providers Near You</h2>
+                        <p class="section-subtitle">Real-time live map showing nearby available technicians with active GPS distances and estimated arrival times.</p>
+                    </div>
+                    <div class="map-actions-top">
+                        <button class="map-btn" onclick="requestUserLocation()">
+                            <i class="fa-solid fa-crosshairs"></i> Center My GPS
+                        </button>
+                        <button class="map-btn secondary" onclick="simulateProviderMovementDemo()">
+                            <i class="fa-solid fa-play"></i> Live Movement Demo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Map Category Filters Bar -->
+                <div class="map-filter-bar">
+                    <button class="map-chip active" data-category="all" onclick="filterMapCategory('all', this)">
+                        <i class="fa-solid fa-globe"></i> All Providers (<span id="mapAllCount">24</span>)
+                    </button>
+                    <button class="map-chip" data-category="Bike Repair" onclick="filterMapCategory('Bike Repair', this)">
+                        <i class="fa-solid fa-motorcycle"></i> Bike Mechanics
+                    </button>
+                    <button class="map-chip" data-category="Electrician" onclick="filterMapCategory('Electrician', this)">
+                        <i class="fa-solid fa-bolt"></i> Electricians
+                    </button>
+                    <button class="map-chip" data-category="Plumbing" onclick="filterMapCategory('Plumbing', this)">
+                        <i class="fa-solid fa-faucet-drip"></i> Plumbers
+                    </button>
+                    <button class="map-chip" data-category="AC Repair" onclick="filterMapCategory('AC Repair', this)">
+                        <i class="fa-solid fa-snowflake"></i> AC Pros
+                    </button>
+                    <button class="map-chip" data-category="Car Repair" onclick="filterMapCategory('Car Repair', this)">
+                        <i class="fa-solid fa-car"></i> Car Mechanics
+                    </button>
+                    <button class="map-chip" data-category="Laptop Repair" onclick="filterMapCategory('Laptop Repair', this)">
+                        <i class="fa-solid fa-laptop"></i> Tech Repairs
+                    </button>
+                </div>
+
+                <!-- Map Card Wrapper -->
+                <div class="map-wrapper">
+                    <!-- Leaflet Container -->
+                    <div id="providersMap" class="leaflet-map-container"></div>
+
+                    <!-- Map Overlay Live Legend -->
+                    <div class="map-overlay-card">
+                        <div class="map-overlay-header">
+                            <span class="pulse-dot"></span>
+                            <strong>Real-Time Radar</strong>
+                            <small id="mapLocationLabel">Coimbatore Central</small>
+                        </div>
+                        <div class="map-legend-items">
+                            <div class="legend-row">
+                                <span class="legend-color customer-color"></span>
+                                <span>Your Current Location</span>
+                            </div>
+                            <div class="legend-row">
+                                <span class="legend-color available-color"></span>
+                                <span>🟢 Available (<span id="legendAvailCount">18</span>)</span>
+                            </div>
+                            <div class="legend-row">
+                                <span class="legend-color busy-color"></span>
+                                <span>🟡 On A Job (<span id="legendBusyCount">6</span>)</span>
+                            </div>
+                        </div>
+                        <div class="map-overlay-footer">
+                            <small><i class="fa-solid fa-hand-pointer"></i> Click any pin to view profile & book instantly</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             PROVIDER DISCOVERY & SEARCH SECTION
+        ========================================================= -->
+        <section class="providers-section section" id="providers">
+            <div class="section-container">
+                <div class="section-heading">
+                    <div>
+                        <span class="section-tag">VERIFIED LOCAL EXPERTS</span>
+                        <h2>Available Technicians Near You</h2>
+                        <p class="section-subtitle">Real professionals with verified background checks, customer ratings, transparent rates, and real-time proximity.</p>
+                    </div>
+
+                    <!-- Category Pills -->
+                    <div class="provider-controls">
+                        <button class="filter-btn active" data-filter="all" onclick="filterProvidersByCategory('all', this)">All (24)</button>
+                        <button class="filter-btn" data-filter="Bike Repair" onclick="filterProvidersByCategory('Bike Repair', this)">🏍️ Bike</button>
+                        <button class="filter-btn" data-filter="Electrician" onclick="filterProvidersByCategory('Electrician', this)">⚡ Electrician</button>
+                        <button class="filter-btn" data-filter="Plumbing" onclick="filterProvidersByCategory('Plumbing', this)">💧 Plumbing</button>
+                        <button class="filter-btn" data-filter="AC Repair" onclick="filterProvidersByCategory('AC Repair', this)">❄️ AC</button>
+                        <button class="filter-btn" data-filter="Car Repair" onclick="filterProvidersByCategory('Car Repair', this)">🚗 Car</button>
+                        <button class="filter-btn" data-filter="Laptop Repair" onclick="filterProvidersByCategory('Laptop Repair', this)">💻 Laptop</button>
+                    </div>
+                </div>
+
+                <!-- Advanced Filters & Sort Bar -->
+                <div class="advanced-filter-bar">
+                    <!-- Distance Filter -->
+                    <div class="filter-select-group">
+                        <label for="filterDistance"><i class="fa-solid fa-location-dot"></i> Distance:</label>
+                        <select id="filterDistance" onchange="applyAllFilters()">
+                            <option value="all">Any Distance</option>
+                            <option value="2">Within 2 km (Fastest)</option>
+                            <option value="5" selected>Within 5 km</option>
+                            <option value="10">Within 10 km</option>
+                        </select>
+                    </div>
+
+                    <!-- Rating Filter -->
+                    <div class="filter-select-group">
+                        <label for="filterRating"><i class="fa-solid fa-star"></i> Rating:</label>
+                        <select id="filterRating" onchange="applyAllFilters()">
+                            <option value="all">All Ratings</option>
+                            <option value="4.8">4.8+ Stars (Top Rated)</option>
+                            <option value="4.5">4.5+ Stars</option>
+                            <option value="4.0">4.0+ Stars</option>
+                        </select>
+                    </div>
+
+                    <!-- Price Filter -->
+                    <div class="filter-select-group">
+                        <label for="filterPrice"><i class="fa-solid fa-indian-rupee-sign"></i> Price:</label>
+                        <select id="filterPrice" onchange="applyAllFilters()">
+                            <option value="all">All Prices</option>
+                            <option value="under300">Under ₹300</option>
+                            <option value="300to500">₹300 – ₹500</option>
+                            <option value="above500">₹500+</option>
+                        </select>
+                    </div>
+
+                    <!-- Availability Toggle -->
+                    <div class="filter-checkbox-group">
+                        <label class="custom-checkbox">
+                            <input type="checkbox" id="filterAvailableOnly" onchange="applyAllFilters()">
+                            <span class="checkmark"></span>
+                            <span>🟢 Available Now Only</span>
+                        </label>
+                    </div>
+
+                    <!-- Sort By -->
+                    <div class="filter-select-group sort-group">
+                        <label for="sortBySelect"><i class="fa-solid fa-arrow-down-short-wide"></i> Sort By:</label>
+                        <select id="sortBySelect" onchange="applyAllFilters()">
+                            <option value="nearest">📍 Nearest Distance</option>
+                            <option value="rating">⭐ Highest Rated</option>
+                            <option value="fastest">⚡ Fastest Arrival (ETA)</option>
+                            <option value="priceLow">💰 Lowest Starting Price</option>
+                            <option value="experience">💼 Most Experienced</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Live Results Count & Active Filter Tags -->
+                <div class="filter-results-status">
+                    <span id="filterResultsCount">Showing <strong>24</strong> verified technicians near Coimbatore</span>
+                    <button class="reset-filter-btn" id="resetFilterBtn" onclick="resetFilters()" style="display: none;">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Filters
+                    </button>
+                </div>
+
+                <!-- Dynamic Providers Grid Container -->
+                <div class="providers-grid" id="providersGrid">
+                    <!-- Dynamic cards injected via script.js -->
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             FAIR PRICE CHECKER & ESTIMATOR
+        ========================================================= -->
+        <section class="price-section section" id="price-checker">
+            <div class="section-container">
+                <div class="price-card-wrapper">
+                    <div class="price-intro">
+                        <span class="section-tag"><i class="fa-solid fa-calculator"></i> TRANSPARENT PRICING</span>
+                        <h2>FixNear Fair Price Estimator</h2>
+                        <p>No hidden surprises. Check upfront market rates for common repair jobs before booking. Our pricing is calibrated to standard local labor and inspection fees.</p>
+                        
+                        <div class="price-feature-list">
+                            <div class="price-feature">
+                                <i class="fa-solid fa-check"></i>
+                                <span>Standard Inspection Fee starting at ₹99</span>
+                            </div>
+                            <div class="price-feature">
+                                <i class="fa-solid fa-check"></i>
+                                <span>Fixed Labor charges for common tasks</span>
+                            </div>
+                            <div class="price-feature">
+                                <i class="fa-solid fa-check"></i>
+                                <span>Pay after completion via UPI QR or Cash</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="price-calculator-box">
+                        <h3><i class="fa-solid fa-sliders"></i> Calculate Estimated Cost</h3>
+                        
+                        <form id="fairPriceForm" onsubmit="handlePriceCalculation(event)">
+                            <div class="form-group">
+                                <label for="calcServiceSelect">Service Category</label>
+                                <select id="calcServiceSelect" required onchange="populateIssueOptions()">
+                                    <option value="">Choose service category</option>
+                                    <option value="Bike Repair">🏍️ Bike Repair</option>
+                                    <option value="Electrician">⚡ Electrician</option>
+                                    <option value="Plumbing">💧 Plumbing</option>
+                                    <option value="AC Repair">❄️ AC Repair</option>
+                                    <option value="Car Repair">🚗 Car Repair</option>
+                                    <option value="Laptop Repair">💻 Laptop Repair</option>
+                                    <option value="Appliances">🔌 Washing Machine / Fridge</option>
+                                    <option value="Cleaning">🧹 Deep Cleaning</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="calcIssueSelect">Specific Issue / Repair Task</label>
+                                <select id="calcIssueSelect" required>
+                                    <option value="">Select category first</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="primary-btn full-btn">
+                                <i class="fa-solid fa-calculator"></i> Calculate Fair Price
+                            </button>
+                        </form>
+
+                        <!-- Calculation Result Card (Dynamically displayed) -->
+                        <div class="price-result-box" id="priceResultBox" style="display: none;">
+                            <div class="price-result-header">
+                                <span class="badge-success">Market Verified Estimate</span>
+                                <strong class="price-main-value" id="calcTotalEstimate">₹299 – ₹399</strong>
+                            </div>
+
+                            <div class="price-breakdown-table">
+                                <div class="price-row">
+                                    <span>Inspection & Visiting Fee</span>
+                                    <strong id="calcInspectionFee">₹99</strong>
+                                </div>
+                                <div class="price-row">
+                                    <span>Estimated Labor Charge</span>
+                                    <strong id="calcLabourFee">₹200</strong>
+                                </div>
+                                <div class="price-row">
+                                    <span>Safety & Platform Fee</span>
+                                    <span>₹19</span>
+                                </div>
+                                <div class="price-row">
+                                    <span>Taxes (GST)</span>
+                                    <span>Included</span>
+                                </div>
+                            </div>
+
+                            <p class="price-disclaimer">
+                                <i class="fa-solid fa-circle-info"></i> Final price may vary if replacement parts or extra work is required after on-site inspection.
+                            </p>
+
+                            <button class="book-estimate-btn" id="bookEstimateBtn" onclick="bookFromPriceEstimator()">
+                                <i class="fa-solid fa-calendar-check"></i> Book Technician for This Issue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             HOW IT WORKS SECTION
+        ========================================================= -->
+        <section class="how-section section" id="how-it-works">
+            <div class="section-container">
+                <div class="center-heading">
+                    <span class="section-tag">SEAMLESS FLOW</span>
+                    <h2>How FixNear Works</h2>
+                    <p>Experience hassle-free local repairs with real-time assignment, live GPS tracking, transparent billing, and contactless UPI payment.</p>
+                </div>
+
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-number">01</div>
+                        <div class="step-icon blue-bg"><i class="fa-solid fa-location-dot"></i></div>
+                        <h3>Select Service & Location</h3>
+                        <p>Choose your repair service or problem. FixNear detects your GPS location to find technicians closest to you.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">02</div>
+                        <div class="step-icon orange-bg"><i class="fa-solid fa-user-check"></i></div>
+                        <h3>Smart Nearest Matching</h3>
+                        <p>Our Haversine algorithm assigns the closest top-rated available technician with fixed arrival estimates.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">03</div>
+                        <div class="step-icon cyan-bg"><i class="fa-solid fa-route"></i></div>
+                        <h3>Rapido-Style Live GPS</h3>
+                        <p>Watch your technician move toward your home on the map in real time. Call or live chat with a single tap.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-number">04</div>
+                        <div class="step-icon green-bg"><i class="fa-solid fa-qrcode"></i></div>
+                        <h3>Pay Securely & Rate</h3>
+                        <p>Inspect the completed job, scan the generated UPI QR code or pay cash, and leave a verified customer review.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             FAQ ACCORDION SECTION
+        ========================================================= -->
+        <section class="faq-section section">
+            <div class="section-container">
+                <div class="center-heading">
+                    <span class="section-tag">COMMON QUESTIONS</span>
+                    <h2>Frequently Asked Questions</h2>
+                    <p>Everything you need to know about booking, tracking, and payments on FixNear.</p>
+                </div>
+
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            <span>How fast does a technician arrive after booking?</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Most local technicians on FixNear arrive within 15 to 30 minutes. You can see their exact real-time live GPS location and ETA on the interactive tracking map.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            <span>Are service professionals background verified?</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Yes, all FixNear professionals undergo strict identity verification, background screening, and skill assessment before joining our network.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            <span>How does payment work?</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>You pay only after the job is completed to your satisfaction. You can scan the technician's generated UPI QR code using GPay/PhonePe/Paytm, enter your UPI ID, use cards, or pay cash.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            <span>What if I need to cancel my booking?</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>You can cancel your booking anytime before the technician starts work directly from the Live Tracking page without any cancellation fee.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             FINAL CALL TO ACTION
+        ========================================================= -->
+        <section class="final-cta">
+            <div class="final-cta-container">
+                <div class="final-icon">
+                    <i class="fa-solid fa-wrench"></i>
+                </div>
+                <h2>Something broken? <span>Let's fix it right now.</span></h2>
+                <p>Over 10,000+ happy households trust FixNear for speedy local repairs every month.</p>
+                <div class="cta-actions">
+                    <button class="primary-btn light-btn" onclick="requestUserLocation()">
+                        <i class="fa-solid fa-crosshairs"></i> Find Experts Near Me
+                    </button>
+                    <a href="#services" class="secondary-btn light-outline-btn">Browse All Services</a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- =========================================================
+         5. FOOTER
+    ========================================================= -->
+    <footer class="footer" id="about">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <a href="#" class="logo footer-logo">
+                    <span class="logo-icon"><i class="fa-solid fa-wrench"></i></span>
+                    <span>Fix<span class="logo-highlight">Near</span></span>
+                </a>
+                <p>Making everyday home, auto, and appliance repairs faster, transparent, and completely dependable with real-time technician matching.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-column">
+                <h4>Popular Services</h4>
+                <a href="javascript:void(0)" onclick="quickFilterService('Bike Repair')">Bike Repair</a>
+                <a href="javascript:void(0)" onclick="quickFilterService('Electrician')">Electrician Work</a>
+                <a href="javascript:void(0)" onclick="quickFilterService('Plumbing')">Plumbing & Leakage</a>
+                <a href="javascript:void(0)" onclick="quickFilterService('AC Repair')">AC Service & Gas</a>
+                <a href="javascript:void(0)" onclick="quickFilterService('Car Repair')">Car Breakdown Help</a>
+            </div>
+
+            <div class="footer-column">
+                <h4>Coverage Areas</h4>
+                <a href="javascript:void(0)" onclick="selectAreaLocation('Coimbatore Central')">Coimbatore Central</a>
+                <a href="javascript:void(0)" onclick="selectAreaLocation('Gandhipuram')">Gandhipuram</a>
+                <a href="javascript:void(0)" onclick="selectAreaLocation('RS Puram')">RS Puram</a>
+                <a href="javascript:void(0)" onclick="selectAreaLocation('Peelamedu')">Peelamedu</a>
+                <a href="javascript:void(0)" onclick="selectAreaLocation('Eachanari')">Eachanari</a>
+            </div>
+
+            <div class="footer-column">
+                <h4>FixNear Platform</h4>
+                <a href="javascript:void(0)" onclick="openMyBookingsModal()">My Bookings</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#price-checker">Fair Pricing Guide</a>
+                <a href="#emergency">Emergency Breakdown</a>
+                <a href="javascript:void(0)" onclick="openLoginModal()">Provider Partner Portal</a>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="footer-bottom-container">
+                <span>© 2026 FixNear Inc. All rights reserved.</span>
+                <span>Designed for next-generation local services.</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- =========================================================
+         6. MODALS & POPUPS SYSTEM
+    ========================================================= -->
+
+    <!-- A. LOCATION SELECTOR MODAL -->
+    <div class="modal-overlay" id="locationModal">
+        <div class="modal location-select-modal">
+            <button class="modal-close" onclick="closeModal('locationModal')" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="modal-icon location-icon">
+                <i class="fa-solid fa-location-dot"></i>
+            </div>
+
+            <h2>Choose Your Location</h2>
+            <p>Select your area or use GPS to calculate exact distances to nearby service providers.</p>
+
+            <!-- Auto GPS Button -->
+            <button class="gps-detect-btn" onclick="requestUserLocation()">
+                <i class="fa-solid fa-crosshairs"></i>
+                <div class="gps-btn-text">
+                    <strong>Use Current GPS Location</strong>
+                    <small>Accurate within 10 meters</small>
+                </div>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+
+            <div class="modal-divider"><span>OR SELECT POPULAR AREA</span></div>
+
+            <div class="area-options-grid">
+                <button class="area-chip" onclick="selectAreaLocation('Coimbatore Central', 11.0168, 76.9558)">
+                    <i class="fa-solid fa-city"></i> Coimbatore Central
+                </button>
+                <button class="area-chip" onclick="selectAreaLocation('RS Puram', 11.0089, 76.9467)">
+                    <i class="fa-solid fa-building"></i> RS Puram
+                </button>
+                <button class="area-chip" onclick="selectAreaLocation('Gandhipuram', 11.0183, 76.9654)">
+                    <i class="fa-solid fa-shop"></i> Gandhipuram
+                </button>
+                <button class="area-chip" onclick="selectAreaLocation('Peelamedu', 11.0287, 77.0028)">
+                    <i class="fa-solid fa-plane"></i> Peelamedu
+                </button>
+                <button class="area-chip" onclick="selectAreaLocation('Saibaba Colony', 11.0315, 76.9452)">
+                    <i class="fa-solid fa-house-chimney"></i> Saibaba Colony
+                </button>
+                <button class="area-chip" onclick="selectAreaLocation('Singanallur', 11.0012, 77.0234)">
+                    <i class="fa-solid fa-bus"></i> Singanallur
+                </button>
+                <button class="area-chip" onclick="selectAreaLocation('Eachanari', 10.9298, 76.9744)">
+                    <i class="fa-solid fa-landmark"></i> Eachanari
+                </button>
+                <button class="area-chip" onclick="selectAreaLocation('Kuniyamuthur', 10.9665, 76.9542)">
+                    <i class="fa-solid fa-tree"></i> Kuniyamuthur
+                </button>
+                <button class="area-chip" onclick="selectAreaLocation('Ukkadam', 10.9890, 76.9602)">
+                    <i class="fa-solid fa-water"></i> Ukkadam
+                </button>
+                <button class="area-chip" onclick="selectAreaLocation('Podanur', 10.9634, 76.9921)">
+                    <i class="fa-solid fa-train"></i> Podanur
+                </button>
+                <button class="area-chip" onclick="selectAreaLocation('Chennai', 13.0827, 80.2707)">
+                    <i class="fa-solid fa-city"></i> Chennai
+                </button>
+                <button class="area-chip" onclick="selectAreaLocation('Bangalore', 12.9716, 77.5946)">
+                    <i class="fa-solid fa-city"></i> Bangalore
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- B. PROVIDER PROFILE FULL MODAL -->
+    <div class="modal-overlay" id="providerProfileModal">
+        <div class="modal profile-modal-card">
+            <button class="modal-close" onclick="closeModal('providerProfileModal')" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="profile-header-card">
+                <div class="profile-avatar-box" id="profileAvatarBox">
+                    <i class="fa-solid fa-user-gear"></i>
+                </div>
+                <div class="profile-main-meta">
+                    <div class="profile-title-row">
+                        <h2 id="profileName">Arun Kumar</h2>
+                        <span class="verified-tag"><i class="fa-solid fa-circle-check"></i> Verified Pro</span>
+                    </div>
+                    <p class="profile-service-tag" id="profileService">Master Electrician & Power Specialist</p>
+                    <div class="profile-badge-row">
+                        <span class="star-rating"><i class="fa-solid fa-star"></i> <strong id="profileRating">4.9</strong> (<span id="profileReviewCount">128</span> reviews)</span>
+                        <span class="dist-badge"><i class="fa-solid fa-location-dot"></i> <span id="profileDistance">1.2 km</span> away</span>
+                        <span class="eta-badge"><i class="fa-solid fa-bolt"></i> <span id="profileEta">15 min</span> arrival</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Stats Grid -->
+            <div class="profile-stats-grid">
+                <div class="stat-card">
+                    <span class="stat-num" id="profileExp">8+ Yrs</span>
+                    <span class="stat-lbl">Experience</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-num" id="profileJobs">540+</span>
+                    <span class="stat-lbl">Jobs Done</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-num" id="profileResponse">5 Min</span>
+                    <span class="stat-lbl">Response Time</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-num" id="profileBasePrice">₹299</span>
+                    <span class="stat-lbl">Starting Fee</span>
+                </div>
+            </div>
+
+            <div class="profile-body-sections">
+                <!-- Services & Coverage -->
+                <div class="profile-info-block">
+                    <h4><i class="fa-solid fa-wrench"></i> Specializations</h4>
+                    <div class="specialization-tags" id="profileSpecializations">
+                        <span>Fan Repair</span>
+                        <span>Wiring & MCB</span>
+                        <span>Short Circuit Fix</span>
+                        <span>Light Fittings</span>
+                        <span>Inverter Setup</span>
+                    </div>
+                </div>
+
+                <div class="profile-info-block">
+                    <h4><i class="fa-solid fa-map-location-dot"></i> Working Areas</h4>
+                    <p id="profileWorkingAreas">RS Puram, Gandhipuram, Saibaba Colony, Coimbatore Central</p>
+                </div>
+
+                <!-- Customer Reviews Section -->
+                <div class="profile-info-block">
+                    <h4><i class="fa-solid fa-comments"></i> Verified Customer Reviews</h4>
+                    <div class="reviews-preview-list" id="profileReviewsList">
+                        <!-- Dynamic reviews injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-modal-footer">
+                <a href="tel:+919876543210" class="profile-call-btn" id="profileCallLink" onclick="logCallAction()">
+                    <i class="fa-solid fa-phone"></i> Call Technician
+                </a>
+                <button class="primary-btn flex-grow-btn" id="profileBookBtn">
+                    <i class="fa-solid fa-calendar-check"></i> Book This Professional
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- C. SERVICE PROBLEM & BOOKING MODAL -->
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal booking-modal">
+            <button class="modal-close" onclick="closeModal('bookingModal')" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="modal-icon booking-icon">
+                <i class="fa-solid fa-calendar-check"></i>
+            </div>
+
+            <h2>Schedule Your Service</h2>
+            <p id="bookingModalSubtext">Fill in your requirements for instant nearest technician assignment.</p>
+
+            <!-- Assigned Provider Banner or Auto-Assign mode -->
+            <div class="assigned-provider-banner" id="assignedProviderBanner">
+                <div class="provider-mini-avatar" id="bookingProAvatar">
+                    <i class="fa-solid fa-user-gear"></i>
+                </div>
+                <div class="banner-pro-info">
+                    <strong id="bookingProName">Arun Kumar</strong>
+                    <span id="bookingProService">Electrician • 1.2 km away</span>
+                </div>
+                <span class="badge-eta" id="bookingProEta">⚡ 15 min ETA</span>
+            </div>
+
+            <form id="serviceBookingForm" onsubmit="handleBookingSubmission(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bookServiceSelect">Service Category</label>
+                        <select id="bookServiceSelect" required onchange="handleBookingServiceChange()">
+                            <option value="Bike Repair">🏍️ Bike Repair</option>
+                            <option value="Car Repair">🚗 Car Repair</option>
+                            <option value="Electrician">⚡ Electrician</option>
+                            <option value="Plumbing">💧 Plumbing</option>
+                            <option value="AC Repair">❄️ AC Repair</option>
+                            <option value="Laptop Repair">💻 Laptop Repair</option>
+                            <option value="Mobile Repair">📱 Mobile Repair</option>
+                            <option value="Appliances">🔌 Appliances Repair</option>
+                            <option value="Cleaning">🧹 Deep Cleaning</option>
+                            <option value="Carpenter">🔨 Carpenter</option>
+                            <option value="Painter">🎨 Painter</option>
+                            <option value="RO Purifier">💧 RO / Purifier</option>
+                            <option value="CCTV Technician">📹 CCTV Setup</option>
+                            <option value="Pest Control">🐛 Pest Control</option>
+                            <option value="Locksmith">🔑 Locksmith</option>
+                            <option value="WiFi Technician">📶 WiFi / Network</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bookProblemSelect">Select Specific Problem</label>
+                        <select id="bookProblemSelect" required onchange="updateBookingEstimatedPrice()">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="bookProblemDetails">Describe the issue / landmark</label>
+                    <textarea id="bookProblemDetails" rows="2" placeholder="e.g. Ceiling fan making loud noise in living room. Near Nilgiris Supermarket." required></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bookCustomerName">Your Name</label>
+                        <input type="text" id="bookCustomerName" placeholder="Enter your full name" required autocomplete="name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bookCustomerPhone">Phone Number</label>
+                        <input type="tel" id="bookCustomerPhone" placeholder="10-digit mobile number" maxlength="10" required autocomplete="tel">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="bookCustomerAddress">Service Address / Area</label>
+                    <div class="address-input-wrap">
+                        <input type="text" id="bookCustomerAddress" placeholder="Flat / House No, Street name, Area" required>
+                        <button type="button" class="use-gps-inline" onclick="fillCurrentAddress()" title="Use Current GPS">
+                            <i class="fa-solid fa-crosshairs"></i> GPS
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bookDate">Preferred Date</label>
+                        <input type="date" id="bookDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bookTime">Preferred Time Slot</label>
+                        <select id="bookTime" required>
+                            <option value="Immediate (Next 15-30 min)">⚡ Immediate (Next 15–30 min)</option>
+                            <option value="10:00 AM - 12:00 PM">10:00 AM – 12:00 PM</option>
+                            <option value="01:00 PM - 03:00 PM">01:00 PM – 03:00 PM</option>
+                            <option value="03:00 PM - 05:00 PM">03:00 PM – 05:00 PM</option>
+                            <option value="05:00 PM - 07:00 PM">05:00 PM – 07:00 PM</option>
+                            <option value="07:00 PM - 09:00 PM">07:00 PM – 09:00 PM</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Price Summary Box -->
+                <div class="booking-price-summary">
+                    <div class="summary-line">
+                        <span>Estimated Service Charge:</span>
+                        <strong id="bookEstimatedCharge">₹299</strong>
+                    </div>
+                    <div class="summary-line">
+                        <span>Inspection & Visiting:</span>
+                        <span class="text-success">Included</span>
+                    </div>
+                    <small class="disclaimer-text"><i class="fa-solid fa-shield"></i> Pay after service via UPI QR / Cash. Final price adjusted if parts needed.</small>
+                </div>
+
+                <div class="modal-actions-row">
+                    <button type="button" class="secondary-btn" onclick="closeModal('bookingModal')">Cancel</button>
+                    <button type="submit" class="primary-btn flex-grow-btn" id="confirmBookingSubmitBtn">
+                        <span>Confirm & Dispatch Technician</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- D. DEDICATED RAPIDO-STYLE LIVE TRACKING VIEW (MODAL / PAGE) -->
+    <div class="modal-overlay tracking-overlay" id="trackingModal">
+        <div class="tracking-modal-card">
+            <!-- Tracking Top Header -->
+            <div class="tracking-header">
+                <div class="tracking-title-wrap">
+                    <span class="live-pulse-badge"><span class="pulse-dot"></span> LIVE DISPATCH</span>
+                    <h2>Service Request Tracking</h2>
+                    <span class="booking-ref">Booking ID: <strong id="trackBookingId">FN-2026-10291</strong></span>
+                </div>
+                <div class="tracking-header-actions">
+                    <button class="minimize-btn" onclick="closeModal('trackingModal')" title="Minimize / Back to Site">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live Tracking Split Layout -->
+            <div class="tracking-split-container">
+                <!-- Left Side: Live Tracking Interactive Leaflet Map -->
+                <div class="tracking-map-side">
+                    <div id="liveTrackingMap" class="live-leaflet-map"></div>
+
+                    <!-- Map Floating Live Status Overlay -->
+                    <div class="tracking-map-floating-pill" id="trackFloatingPill">
+                        <div class="floating-pill-icon"><i class="fa-solid fa-motorcycle"></i></div>
+                        <div>
+                            <strong id="trackDistanceText">2.1 km away</strong>
+                            <small id="trackEtaText">Arriving in 12 min</small>
+                        </div>
+                    </div>
+
+                    <!-- Fast-Forward Simulation Demo Controller (For testing user experience) -->
+                    <div class="sim-control-strip">
+                        <span>Simulation Demo Controls:</span>
+                        <button class="sim-step-btn" onclick="advanceTrackingSimulation()">
+                            <i class="fa-solid fa-forward-step"></i> Next Step
+                        </button>
+                        <button class="sim-step-btn reset-btn" onclick="resetTrackingSimulation()">
+                            <i class="fa-solid fa-rotate-left"></i> Restart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Side: Technician Card, Status Timeline & Actions -->
+                <div class="tracking-info-side">
+                    <!-- Technician Profile Card -->
+                    <div class="tracking-technician-card">
+                        <div class="tech-photo-box" id="trackTechAvatar">
+                            <i class="fa-solid fa-user-gear"></i>
+                        </div>
+                        <div class="tech-details">
+                            <div class="tech-name-row">
+                                <h3 id="trackTechName">Arun Kumar</h3>
+                                <span class="verified-badge-sm"><i class="fa-solid fa-check"></i> Verified</span>
+                            </div>
+                            <p class="tech-service-title" id="trackTechService">Electrician Expert</p>
+                            <div class="tech-vehicle-meta">
+                                <span id="trackTechVehicle"><i class="fa-solid fa-motorcycle"></i> Honda Activa • TN 38 BJ 4092</span>
+                                <span class="tech-stars"><i class="fa-solid fa-star"></i> <strong id="trackTechRating">4.9</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Communication Buttons: Call & Chat -->
+                    <div class="tracking-contact-actions">
+                        <a href="tel:+919876543210" class="contact-btn call-action" id="trackCallBtn">
+                            <i class="fa-solid fa-phone"></i>
+                            <span>Call Technician</span>
+                        </a>
+                        <button class="contact-btn chat-action" onclick="openChatModal()">
+                            <i class="fa-solid fa-message"></i>
+                            <span>Live Chat</span>
+                            <span class="chat-unread-dot" id="chatUnreadDot" style="display: none;"></span>
+                        </button>
+                    </div>
+
+                    <!-- Service Status Timeline -->
+                    <div class="status-timeline-card">
+                        <h4>Service Progress</h4>
+                        <div class="timeline-stepper" id="trackingTimeline">
+                            <!-- Step 1: Confirmed -->
+                            <div class="timeline-step completed" id="stepConfirmed">
+                                <div class="step-dot"><i class="fa-solid fa-check"></i></div>
+                                <div class="step-label-box">
+                                    <strong>Booking Confirmed</strong>
+                                    <small id="stepConfirmedTime">Just now</small>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Assigned -->
+                            <div class="timeline-step completed" id="stepAssigned">
+                                <div class="step-dot"><i class="fa-solid fa-check"></i></div>
+                                <div class="step-label-box">
+                                    <strong>Technician Assigned</strong>
+                                    <small id="stepAssignedSub">Nearest pro matched</small>
+                                </div>
+                            </div>
+
+                            <!-- Step 3: On The Way -->
+                            <div class="timeline-step active" id="stepOnWay">
+                                <div class="step-dot"><i class="fa-solid fa-route"></i></div>
+                                <div class="step-label-box">
+                                    <strong>Technician On The Way</strong>
+                                    <small id="stepOnWaySub">Live GPS tracking active</small>
+                                </div>
+                            </div>
+
+                            <!-- Step 4: Arrived -->
+                            <div class="timeline-step" id="stepArrived">
+                                <div class="step-dot"><i class="fa-solid fa-location-dot"></i></div>
+                                <div class="step-label-box">
+                                    <strong>Technician Arrived</strong>
+                                    <small id="stepArrivedSub">At your doorstep</small>
+                                </div>
+                            </div>
+
+                            <!-- Step 5: Service Started -->
+                            <div class="timeline-step" id="stepStarted">
+                                <div class="step-dot"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                                <div class="step-label-box">
+                                    <strong>Service in Progress</strong>
+                                    <small id="stepStartedSub">Inspection & repair work</small>
+                                </div>
+                            </div>
+
+                            <!-- Step 6: Completed -->
+                            <div class="timeline-step" id="stepCompleted">
+                                <div class="step-dot"><i class="fa-solid fa-circle-check"></i></div>
+                                <div class="step-label-box">
+                                    <strong>Service Completed</strong>
+                                    <small id="stepCompletedSub">Generate bill & pay</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Action Trigger (Changes depending on status) -->
+                    <div class="tracking-bottom-card" id="trackingBottomActionBox">
+                        <div class="bill-preview-row">
+                            <span>Estimated Bill:</span>
+                            <strong id="trackEstimatedAmount">₹299</strong>
+                        </div>
+                        <button class="primary-btn full-btn" id="trackMainActionBtn" onclick="handleTrackingStateAction()">
+                            <i class="fa-solid fa-forward"></i> Simulate Technician Arrival
+                        </button>
+                        <button class="cancel-booking-link" id="trackCancelBtn" onclick="cancelActiveBooking()">
+                            Cancel Booking
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- E. LIVE CHAT MODAL -->
+    <div class="modal-overlay" id="chatModal">
+        <div class="modal chat-modal-card">
+            <div class="chat-header">
+                <div class="chat-user-meta">
+                    <div class="chat-avatar" id="chatHeaderAvatar"><i class="fa-solid fa-user-gear"></i></div>
+                    <div>
+                        <strong id="chatHeaderName">Arun Kumar (Technician)</strong>
+                        <small class="text-success">● Active on route</small>
+                    </div>
+                </div>
+                <button class="modal-close" onclick="closeModal('chatModal')" aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Chat Message Stream -->
+            <div class="chat-body" id="chatBody">
+                <div class="chat-bubble incoming">
+                    <p>Hello! I have accepted your request and am heading toward your location. Please let me know if there are any specific directions.</p>
+                    <span class="chat-time">Just now</span>
+                </div>
+            </div>
+
+            <!-- Quick Response Chips -->
+            <div class="chat-quick-chips">
+                <button type="button" onclick="sendQuickChatMessage('Where are you right now?')">Where are you?</button>
+                <button type="button" onclick="sendQuickChatMessage('How many minutes will you take?')">How many minutes?</button>
+                <button type="button" onclick="sendQuickChatMessage('I am waiting near the main gate.')">Waiting near gate</button>
+                <button type="button" onclick="sendQuickChatMessage('Please call when you reach.')">Call when you reach</button>
+            </div>
+
+            <!-- Chat Input Bar -->
+            <form class="chat-input-bar" id="chatForm" onsubmit="handleChatSubmit(event)">
+                <input type="text" id="chatInput" placeholder="Type a message to technician..." autocomplete="off" required>
+                <button type="submit" class="chat-send-btn">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- F. FINAL ITEMIZED BILL & PAYMENT MODAL -->
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal payment-modal-card">
+            <button class="modal-close" onclick="closeModal('paymentModal')" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="modal-icon payment-icon">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+
+            <h2>Service Completed · Final Invoice</h2>
+            <p>Your service job has been finished. Please complete payment using your preferred method.</p>
+
+            <!-- Itemized Final Bill Table -->
+            <div class="bill-breakdown-card">
+                <div class="bill-header-row">
+                    <div>
+                        <strong id="payServiceName">Electrician Work</strong>
+                        <small id="payProviderName">Served by Arun Kumar</small>
+                    </div>
+                    <span class="badge-status-completed">Job Finished</span>
+                </div>
+
+                <div class="bill-items-list">
+                    <div class="bill-line">
+                        <span>Inspection & Visiting Charge</span>
+                        <strong id="payInspectionFee">₹99</strong>
+                    </div>
+                    <div class="bill-line">
+                        <span>Labor & Service Charge</span>
+                        <strong id="payLabourFee">₹200</strong>
+                    </div>
+                    <div class="bill-line">
+                        <span>Parts / Consumables</span>
+                        <strong id="payPartsFee">₹0</strong>
+                    </div>
+                    <div class="bill-line">
+                        <span>Platform & Safety Fee</span>
+                        <strong>₹19</strong>
+                    </div>
+                    <div class="bill-line total-line">
+                        <span>Total Payable Amount</span>
+                        <strong class="total-amount" id="payTotalAmount">₹318</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method Tabs -->
+            <div class="payment-tabs-nav">
+                <button class="pay-tab active" data-tab="qr" onclick="switchPaymentTab('qr', this)">
+                    <i class="fa-solid fa-qrcode"></i> UPI QR Code
+                </button>
+                <button class="pay-tab" data-tab="upi" onclick="switchPaymentTab('upi', this)">
+                    <i class="fa-solid fa-mobile-screen"></i> UPI ID
+                </button>
+                <button class="pay-tab" data-tab="card" onclick="switchPaymentTab('card', this)">
+                    <i class="fa-solid fa-credit-card"></i> Card
+                </button>
+                <button class="pay-tab" data-tab="cash" onclick="switchPaymentTab('cash', this)">
+                    <i class="fa-solid fa-money-bill-wave"></i> Cash
+                </button>
+            </div>
+
+            <!-- Payment Tab Contents -->
+            <div class="payment-tab-content" id="payTabContentQR">
+                <div class="qr-payment-container">
+                    <div class="qr-canvas-box" id="qrCanvasBox">
+                        <!-- Dynamic SVG QR Code will be rendered here -->
+                    </div>
+                    <div class="qr-instructions">
+                        <strong>Scan with any UPI App</strong>
+                        <p>Google Pay • PhonePe • Paytm • BHIM • CRED</p>
+                        <div class="upi-id-pill">
+                            <span>UPI ID: <strong>fixnear@upi</strong></span>
+                            <button type="button" class="copy-upi-btn" onclick="copyUpiId()" title="Copy UPI ID">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="payment-tab-content" id="payTabContentUPI" style="display:none;">
+                <div class="form-group">
+                    <label for="customerUpiId">Enter Your UPI ID / VPA</label>
+                    <input type="text" id="customerUpiId" placeholder="e.g. mobile@okhdfcbank or user@paytm">
+                </div>
+                <p class="pay-note"><i class="fa-solid fa-info-circle"></i> We will send a payment collect request to your UPI app.</p>
+            </div>
+
+            <div class="payment-tab-content" id="payTabContentCard" style="display:none;">
+                <div class="form-group">
+                    <label for="cardNumber">Card Number</label>
+                    <input type="text" id="cardNumber" placeholder="4532 •••• •••• 8890" maxlength="19">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cardExpiry">Expiry (MM/YY)</label>
+                        <input type="text" id="cardExpiry" placeholder="12/28" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="cardCvv">CVV</label>
+                        <input type="password" id="cardCvv" placeholder="•••" maxlength="3">
+                    </div>
+                </div>
+            </div>
+
+            <div class="payment-tab-content" id="payTabContentCash" style="display:none;">
+                <div class="cash-pay-box">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                    <strong>Pay Cash Directly on Hand</strong>
+                    <p>Hand over the exact amount of <strong id="cashAmountLabel">₹318</strong> to the technician and collect your digital invoice.</p>
+                </div>
+            </div>
+
+            <div class="demo-payment-badge">
+                <i class="fa-solid fa-shield-check"></i>
+                <span>Demo payment gateway simulator. No real money will be charged.</span>
+            </div>
+
+            <button class="primary-btn full-btn" id="confirmPaymentBtn" onclick="processPaymentExecution()">
+                <i class="fa-solid fa-check-double"></i>
+                <span id="payBtnLabel">I Have Paid (Complete Order)</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- G. RATING & REVIEW MODAL -->
+    <div class="modal-overlay" id="reviewModal">
+        <div class="modal review-modal-card">
+            <button class="modal-close" onclick="closeModal('reviewModal')" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="modal-icon success-icon">
+                <i class="fa-solid fa-star"></i>
+            </div>
+
+            <h2>How was your experience?</h2>
+            <p id="reviewProviderPrompt">Rate your service experience with Arun Kumar</p>
+
+            <!-- Star Rating Selector -->
+            <div class="star-rating-selector" id="starRatingSelector">
+                <button type="button" class="star-btn active" data-rating="1" onclick="setReviewRating(1)"><i class="fa-solid fa-star"></i></button>
+                <button type="button" class="star-btn active" data-rating="2" onclick="setReviewRating(2)"><i class="fa-solid fa-star"></i></button>
+                <button type="button" class="star-btn active" data-rating="3" onclick="setReviewRating(3)"><i class="fa-solid fa-star"></i></button>
+                <button type="button" class="star-btn active" data-rating="4" onclick="setReviewRating(4)"><i class="fa-solid fa-star"></i></button>
+                <button type="button" class="star-btn active" data-rating="5" onclick="setReviewRating(5)"><i class="fa-solid fa-star"></i></button>
+            </div>
+            <strong class="rating-descriptor" id="ratingDescriptor">Excellent! (5.0 / 5.0)</strong>
+
+            <!-- Compliment Tags -->
+            <div class="compliments-group">
+                <label>What did you like?</label>
+                <div class="compliment-chips" id="complimentChips">
+                    <button type="button" class="comp-chip active" onclick="toggleComplimentChip(this)">⚡ On Time Arrival</button>
+                    <button type="button" class="comp-chip active" onclick="toggleComplimentChip(this)">🛠️ Expert Skills</button>
+                    <button type="button" class="comp-chip active" onclick="toggleComplimentChip(this)">✨ Clean Work</button>
+                    <button type="button" class="comp-chip" onclick="toggleComplimentChip(this)">🤝 Polite Behavior</button>
+                    <button type="button" class="comp-chip" onclick="toggleComplimentChip(this)">💰 Fair Price</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reviewComment">Write your feedback (Optional)</label>
+                <textarea id="reviewComment" rows="3" placeholder="Arun was very professional, identified the problem instantly and fixed it cleanly!"></textarea>
+            </div>
+
+            <button class="primary-btn full-btn" onclick="submitReviewFeedback()">
+                <i class="fa-solid fa-check"></i> Submit Review & Save
+            </button>
+        </div>
+    </div>
+
+    <!-- H. MY BOOKINGS & DASHBOARD MODAL -->
+    <div class="modal-overlay" id="myBookingsModal">
+        <div class="modal my-bookings-card">
+            <button class="modal-close" onclick="closeModal('myBookingsModal')" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="modal-icon">
+                <i class="fa-solid fa-clipboard-list"></i>
+            </div>
+
+            <h2>Customer Dashboard</h2>
+            <p>View your active service tracking, past booking history, and favorite providers.</p>
+
+            <!-- Dashboard Navigation Tabs -->
+            <div class="dashboard-tabs">
+                <button class="dash-tab active" data-tab="active" onclick="switchDashboardTab('active', this)">
+                    Active Services (<span id="dashActiveCount">0</span>)
+                </button>
+                <button class="dash-tab" data-tab="history" onclick="switchDashboardTab('history', this)">
+                    Booking History (<span id="dashHistoryCount">0</span>)
+                </button>
+                <button class="dash-tab" data-tab="favorites" onclick="switchDashboardTab('favorites', this)">
+                    Saved Pros (<span id="dashFavCount">0</span>)
+                </button>
+            </div>
+
+            <!-- Active Bookings Tab Content -->
+            <div class="dash-tab-body" id="dashTabActive">
+                <div class="active-bookings-container" id="dashActiveBookingsList">
+                    <!-- Dynamic active booking cards -->
+                </div>
+            </div>
+
+            <!-- Past History Tab Content -->
+            <div class="dash-tab-body" id="dashTabHistory" style="display: none;">
+                <div class="history-bookings-container" id="dashHistoryBookingsList">
+                    <!-- Dynamic history cards -->
+                </div>
+            </div>
+
+            <!-- Favorites Tab Content -->
+            <div class="dash-tab-body" id="dashTabFavorites" style="display: none;">
+                <div class="fav-providers-container" id="dashFavoritesList">
+                    <!-- Dynamic favorites list -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- I. LOGIN / ACCOUNT MODAL -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal auth-modal-card">
+            <button class="modal-close" onclick="closeModal('loginModal')" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="modal-icon">
+                <i class="fa-solid fa-user-lock"></i>
+            </div>
+
+            <h2 id="authModalTitle">Welcome to FixNear</h2>
+            <p>Login or register with your mobile number to manage bookings and live tracking.</p>
+
+            <form id="authLoginForm" onsubmit="handleAuthSubmit(event)">
+                <div class="form-group">
+                    <label for="authUserName">Full Name</label>
+                    <input type="text" id="authUserName" placeholder="Enter your name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="authUserPhone">Mobile Number</label>
+                    <div class="phone-prefix-wrap">
+                        <span class="phone-prefix">+91</span>
+                        <input type="tel" id="authUserPhone" placeholder="10-digit mobile number" maxlength="10" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="primary-btn full-btn">
+                    <span>Continue</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <small class="auth-terms-note">
+                By continuing, you agree to FixNear's <a href="#">Terms of Service</a> & <a href="#">Privacy Policy</a>.
+            </small>
+        </div>
+    </div>
+
+    <!-- J. TOAST NOTIFICATION POPUP -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- =========================================================
+         7. SCRIPTS
+    ========================================================= -->
+    <script src="script.js"></script>
+</body>
+
+</html>
